@@ -1,14 +1,15 @@
 import subprocess
+import logging
 
 class Copy():
-    def __init__(self, source="", target="", filename="", link="",ssh=None,rsyncconf="",logger=None):
+    def __init__(self, source="", target="", filename="", link="",ssh=None,rsyncconf=""):
         self.source = source
         self.target = target
         self.filename = filename
         self.link = link
         self.ssh = ssh
         self.rsyncconf = rsyncconf
-        self.logging = logger
+        #self.logging = logger
 
     def set_ssh(self, ssh):
         self.ssh = ssh
@@ -29,21 +30,30 @@ class Copy():
         self.rsyncconf = rsyncconf
 
     def create_target_dir(self):
-        raise Exception("NotImplementedException")
+        return ["mkdir","-p",self.target]
 
     def do_copy(self):
         command=self.create_target_dir()
-        self.logging.debug("  create dir command:{}".format(" ".join(command)))
+        logging.debug("  create dir command:{}".format(" ".join(command)))
         output = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
-        self.logging.debug("  output:{}".format(output))
+        logging.debug("  output:{}".format(output))
 
         command=self.copy_command()
-        self.logging.debug("  copy command:{}".format(" ".join(command)))
+        logging.debug("  copy command:{}".format(" ".join(command)))
         output = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
-        self.logging.debug("  output:{}".format(output))
+        logging.debug("  output:{}".format(output))
 
-    def set_logger(self,logging):
-        self.logging = logging
 
-    def copy_command(self):
+    def create_link(self):
         raise Exception("NotImplementedException")
+
+    def create_link_command(self):
+        return ["ln", "-nsf", "{}/{}".format(self.target, self.filename), self.link]
+
+    def create_link(self):
+        # echo "ln -nsf $TARGET$TODAY $TARGET$LAST" >> $LOG
+        # ln -nsf "$TARGET"$TODAY "$TARGET"last  >> $LOG 2>&1
+        command = self.create_link_command()
+        logging.debug("  link command:{}".format(" ".join(command)))
+        output = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
+        logging.debug("  output:{}".format(output))

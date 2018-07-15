@@ -21,8 +21,8 @@ class Ssh:
 
     def get_option(self):
         if self.mode==0:
-            return ""
-        return "ssh -p {} -l {}".format(self.port,self.user)
+            return []
+        return ["ssh","-p",""+self.port,"-l",self.user]
 
     def get_server(self):
         return self.server
