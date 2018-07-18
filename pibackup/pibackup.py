@@ -40,8 +40,8 @@ class PiBackup:
         for key, rotation in frequency_items:
             if key.strip()[0] == ";":
                 continue
-            occurrence, frequency, method = rotation.split(";")
-            self.process_backup(key, occurrence, frequency, method)
+            occurrence, frequency, method, plugin = rotation.split(";")
+            self.process_backup(key, occurrence, frequency, method, plugin)
 
     @staticmethod
     def build_filename(key, frequency):
@@ -66,15 +66,21 @@ class PiBackup:
         copy.set_rsyncconf(self.rsyncconf)
         return copy
 
-    def process_backup(self, key, occurrence, frequency, method):
+    def process_backup(self, key, occurrence, frequency, method,plugin):
         # quick = all;weekly;rsync
         # full = once;weekly;sd
         frequency = self.config.fequencies[frequency]
+        method = self.config.methods[method] #methods = {"rsync": 1, "sd": 2, }
         fname = self.build_filename(key, frequency)
         logging.info('  processing ' + fname)
         copy = None
-        for folder in self.config.get('folders', 'sources').split(";"):
-            copy = self.build_copy(fname, folder,key)
-            copy.do_copy()
-        # just use the last copy-instance to create the link
-        copy.create_link()
+        if method==1:
+            #copy files via rsync
+            for folder in self.config.get('folders', 'sources').split(";"):
+                copy = self.build_copy(fname, folder,key)
+                copy.do_copy()
+            # just use the last copy-instance to create the link
+            copy.create_link()
+        elif method==2:
+            #copy the whole sd via dd
+            raise Exception("NotImplementedException")

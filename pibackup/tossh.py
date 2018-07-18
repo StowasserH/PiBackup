@@ -10,6 +10,7 @@ class ToSsh(Copy):
 
     def copy_command(self):
         return ["rsync"
+                , "-e"
                 , self.ssh.get_option()
                 , "-avR"
                 , self.source
@@ -17,7 +18,14 @@ class ToSsh(Copy):
                 , "{}:{}/{}".format(self.ssh.get_server(), self.target, self.filename)
                 , "--link-dest"
                 , self.link]
+        #-e \"$S\" S="ssh -p $SSHPORT -l $SSHUSER";
 
     def create_link_command(self):
         return [self.ssh.get_option, self.ssh.get_server(), "ln", "-nsf", "{}/{}".format(self.target, self.filename),
                 self.link]
+
+    def pipe(self,stream):
+        return [self.ssh.get_option, self.ssh.get_server(), stream]
+        #"mysqldump -mysqldumpoptions database | gzip -3 -c" > /localpath/localfile.sql.gz
+        #this works:
+        #mysqldump --compact --disable-keys --dump-date --comments --lock-tables -u root --all-databases | gzip -c | ssh backups@servberry 'cat > ~/zabbix.dump.gz'
